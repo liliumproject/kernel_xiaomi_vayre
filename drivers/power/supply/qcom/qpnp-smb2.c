@@ -1151,9 +1151,6 @@ static enum power_supply_property smb2_batt_props[] = {
 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
 	POWER_SUPPLY_PROP_CHARGE_COUNTER,
-#ifdef CONFIG_MACH_LONGCHEER
-	POWER_SUPPLY_PROP_CHARGING_ENABLED,
-#endif
 	POWER_SUPPLY_PROP_CHARGE_FULL,
 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
 	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
@@ -1170,11 +1167,6 @@ static int smb2_batt_get_prop(struct power_supply *psy,
 	union power_supply_propval pval = {0, };
 
 	switch (psp) {
-#ifdef CONFIG_MACH_LONGCHEER
-	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
-		val->intval = chg->charging_enabled;
-		break;
-#endif
 	case POWER_SUPPLY_PROP_STATUS:
 		rc = smblib_get_prop_batt_status(chg, val);
 		break;
@@ -1324,11 +1316,6 @@ static int smb2_batt_set_prop(struct power_supply *psy,
 	struct smb_charger *chg = power_supply_get_drvdata(psy);
 
 	switch (prop) {
-#ifdef CONFIG_MACH_LONGCHEER
-	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
-		rc = lct_set_prop_input_suspend(chg, val);
-		break;
-#endif
 	case POWER_SUPPLY_PROP_STATUS:
 		rc = smblib_set_prop_batt_status(chg, val);
 		break;
@@ -1433,9 +1420,6 @@ static int smb2_batt_prop_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_PARALLEL_DISABLE:
 	case POWER_SUPPLY_PROP_DP_DM:
 	case POWER_SUPPLY_PROP_RERUN_AICL:
-#ifdef CONFIG_MACH_LONGCHEER
-	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
-#endif
 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMITED:
 	case POWER_SUPPLY_PROP_STEP_CHARGING_ENABLED:
 	case POWER_SUPPLY_PROP_SW_JEITA_ENABLED:
@@ -2983,7 +2967,6 @@ static int smb2_probe(struct platform_device *pdev)
 	/* register suspend and resume function */
 	lct_register_powermanager(chg);
 #endif
-	chg->charging_enabled = true;
 #endif
 
 	pr_info("QPNP SMB2 probed successfully usb:present=%d type=%d batt:present = %d health = %d charge = %d\n",
