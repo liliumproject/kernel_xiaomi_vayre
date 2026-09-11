@@ -670,7 +670,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	if ((gesture_id == DATA_PROTOCOL) && (func_type == FUNCPAGE_GESTURE)) {
 		gesture_id = func_id;
 	} else if (gesture_id > DATA_PROTOCOL) {
-		NVT_ERR("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
+		NVT_LOG("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
 		return;
 	}
 
@@ -1279,6 +1279,11 @@ static void nvt_ts_work_func(void)
 
 	if (bTouchIsAwake == 0) {
 		input_id = (uint8_t)(point_data[1] >> 3);
+		if (point_data[1] == 0xFF || input_id > DATA_PROTOCOL) {
+			/* Spurious interrupt or unpowered bus during suspend */
+			mutex_unlock(&ts->lock);
+			return;
+		}
 		nvt_ts_wakeup_gesture_report(input_id, point_data);
 		mutex_unlock(&ts->lock);
 		return;

@@ -657,7 +657,7 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	if ((gesture_id == DATA_PROTOCOL) && (func_type == FUNCPAGE_GESTURE)) {
 		gesture_id = func_id;
 	} else if (gesture_id > DATA_PROTOCOL) {
-		NVT_ERR("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
+		NVT_LOG("gesture_id %d is invalid, func_type=%d, func_id=%d\n", gesture_id, func_type, func_id);
 		return;
 	}
 
@@ -721,6 +721,10 @@ void nvt_ts_wakeup_gesture_report(uint8_t gesture_id, uint8_t *data)
 	}
 
 	if (keycode > 0) {
+#if WAKEUP_GESTURE
+		if (ts->gesture_wakeup)
+			__pm_wakeup_event(ts->gesture_wakeup, msecs_to_jiffies(5000));
+#endif
 		input_report_key(ts->input_dev, keycode, 1);
 		input_sync(ts->input_dev);
 		input_report_key(ts->input_dev, keycode, 0);
@@ -873,9 +877,11 @@ static void nvt_ts_work_func(struct work_struct *work)
 #if WAKEUP_GESTURE
 	if (bTouchIsAwake == 0) {
 		input_id = (uint8_t)(point_data[1] >> 3);
+		if (point_data[1] == 0xFF || input_id > DATA_PROTOCOL) {
+			goto XFER_ERROR;
+		}
 		nvt_ts_wakeup_gesture_report(input_id, point_data);
-		mutex_unlock(&ts->lock);
-		return;
+		goto XFER_ERROR;
 	}
 #endif
 	finger_cnt = 0;
@@ -992,11 +998,6 @@ return:
 *******************************************************/
 static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 {
-#if WAKEUP_GESTURE
-	if (bTouchIsAwake == 0) {
-		__pm_wakeup_event(ts->gesture_wakeup, msecs_to_jiffies(5000));
-	}
-#endif
 	queue_work(nvt_wq, &ts->nvt_work);
 
 	return IRQ_HANDLED;
@@ -1518,6 +1519,8 @@ if (delay_gesture) {
 
 if (!enable_gesture_mode) {
 	enable_irq(ts->client->irq);
+} else {
+	disable_irq_wake(ts->client->irq);
 }
 
 if (delay_gesture) {
