@@ -48,23 +48,46 @@
 };
 
 &pm660_haptics {
-	/delete-property/ qcom,correct-lra-drive-freq;
-	qcom,play-mode = "buffer";
 	qcom,vmax-mv = <2204>;
-	qcom,wave-shape = "sine";
-	qcom,wave-play-rate-us = <4878>;
-	qcom,int-pwm-freq-khz = <253>;
-	qcom,brake-pattern = [02 02 01 00];
-	qcom,wave-samples = [3e 3e 3e 00 00 00 00 00];
-	qcom,wave-samples-two = [3e 3e 3e 3e 00 00 00 00];
-	qcom,wave-samples-three = [3e 3e 3e 3e 3e 00 00 00];
-	qcom,wave-rep-cnt = <1>;
-	qcom,wave-samp-rep-cnt = <1>;
-	qcom,lra-high-z = "opt1";
-	qcom,lra-auto-res-mode = "none";
-	qcom,lra-hw-auto-resonance;
-};
+	qcom,play-rate-us = <4878>;
+	qcom,lra-auto-resonance-mode = "zxd";
 
+	/delete-node/ wf_0;
+	/delete-node/ wf_1;
+	/delete-node/ wf_2;
+	/delete-node/ wf_3;
+	/delete-node/ wf_4;
+	/delete-node/ wf_5;
+
+	wf_0 {
+		/* CLICK */
+		qcom,effect-id = <0>;
+		qcom,wf-pattern = [78 78];
+		qcom,wf-brake-pattern = [02 00 00 00];
+		qcom,lra-auto-resonance-disable;
+	};
+	wf_1 {
+		/* DOUBLE CLICK */
+		qcom,effect-id = <1>;
+		qcom,wf-pattern = [70 02 02 02 02 02 02 02];
+		qcom,wf-repeat-count = <2>;
+		qcom,wf-s-repeat-count = <2>;
+		qcom,lra-auto-resonance-disable;
+	};
+	wf_2 {
+		/* TICK */
+		qcom,effect-id = <2>;
+		qcom,wf-pattern = [7e 7e];
+		qcom,wf-brake-pattern = [03 03 00 00];
+		qcom,lra-auto-resonance-disable;
+	};
+	wf_5 {
+		/* HEAVY CLICK */
+		qcom,effect-id = <5>;
+		qcom,wf-pattern = [7e 7e 7e 7e];
+		qcom,lra-auto-resonance-disable;
+	};
+};
 
 /* msm-audio.dtsi wayne specific diff */
 &int_codec {
